@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import lab.lab01.masterand.navigation.SetupNavGraph
 import lab.lab01.masterand.ui.theme.MasterAndTheme
 
 class MasterAnd : ComponentActivity() {

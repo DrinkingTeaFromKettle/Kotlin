@@ -1,56 +1,45 @@
-package lab.lab01.masterand
+package lab.lab01.masterand.views
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import lab.lab01.masterand.ui.theme.MasterAndTheme
+import lab.lab01.masterand.navigation.Screen
+import lab.lab01.masterand.viewModels.AppViewModelProvider
+import lab.lab01.masterand.viewModels.GameViewModel
+import lab.lab01.masterand.viewModels.ResultsViewModel
 import kotlin.random.Random
 
 
 
 @Composable
-fun GameScreen(navController: NavController, number: String) {
-    var  colList= mutableListOf<Color>();
-    colList.add(Color.Cyan);
-    colList.add(Color.Red);
-    colList.add(Color.Blue);
-    colList.add(Color.Yellow);
-    colList.add(Color.Green);
-    colList.add(Color.Magenta);
-    colList.add(Color.Black);
-    colList.add(Color.Gray);
-    colList.add(Color(0xffffa500));
-    colList.add(Color(0xffbd3aff));
-    var  infoColors= mutableListOf<Color>();
-    infoColors.add(Color.Red);
-    infoColors.add(Color.Yellow);
-    infoColors.add(Color.Transparent);
+fun GameScreen(navController: NavController, number: String,  viewModel: GameViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
 
-    var rightColors = selectRandomColors(colList)
-    var chosenColors = rememberSaveable { mutableListOf<Color>() }
-    var rowData =
+
+    var  infoColors = remember { mutableListOf(List(4) { Color.White }) };
+
+    viewModel.availableColors = viewModel.colList.subList(0, number.toInt())
+    if(viewModel.rightColors.isEmpty()) {
+        viewModel.rightColors = selectRandomColors(viewModel.availableColors)
+    }
+
+
 
     Column {
         Text(
@@ -59,29 +48,51 @@ fun GameScreen(navController: NavController, number: String) {
             modifier = Modifier.padding(bottom = 48.dp)
         )
         Text(
-            text = "Score:",
+            text = "Score:" + viewModel.score.value.toString(),
             style = MaterialTheme.typography.displayLarge,
             modifier = Modifier.padding(bottom = 48.dp)
         )
 
 
 
-    var chosenColors = colList
-    //lista wierszy
     Box{
-        Column(
-            modifier = Modifier.fillMaxHeight(),
+        LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-//            items(rowData.size) { rowNumber ->
-//                GameRow(chosenColors = chosenColors, infoColors = chosenColors, clickable = true,
-//                    onSelectColorCLick = {number: Int ->  }, onCheckClick = {});
-//                Spacer(modifier = Modifier.height(8.dp))
-//            }
+            items(viewModel.rowData.value.size) { rowNumber ->
+                GameRow(chosenColors = viewModel.rowData.value[rowNumber], infoColors = infoColors.get(rowNumber), clickable = !viewModel.gameEnd.value,
+                    onSelectColorCLick = {
+                        number: Int ->
+                        val nextColor = selectNextAvailableColor(viewModel.availableColors, viewModel.rowData.value[rowNumber], number)
+                        val newRow = viewModel.rowData.value[rowNumber].toMutableList()
+                        newRow[number] = nextColor
+                        viewModel.rowData.value =  viewModel.rowData.value.toMutableList().apply {
+                            set(rowNumber, newRow.toList())
+                        }
+                    }
+                    , onCheckClick = {
+                        infoColors += checkColors(viewModel.rowData.value.last(), viewModel.rightColors, Color.Gray);
+                        viewModel.score.value += 1
+
+                        if (viewModel.rowData.value.last() == viewModel.rightColors) {
+                            viewModel.gameEnd.value = true
+                            return@GameRow
+                        }
+                        viewModel.rowData.value += listOf(List(4) { Color.White })
+                    });
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+        }
+    }
+    Box {
+        Column {
+
             Button(
                 onClick = {
-                    navController.navigate(route = Screen.Results.route+"/4")
+                    navController.navigate(route = Screen.Results.route+"/"+viewModel.score.value + "/" + number)
                 },
+                enabled = viewModel.gameEnd.value,
 
                 ) {
                 Text(
@@ -99,10 +110,7 @@ fun GameScreen(navController: NavController, number: String) {
                 )
             }
         }
-
-
     }
-
 
     }
 
@@ -111,11 +119,9 @@ fun GameScreen(navController: NavController, number: String) {
 
 
 @Composable
-fun circularButton(onCLick: (numer: Int) -> Unit ,color: Color) {
+fun circularButton(onCLick: () -> Unit ,color: Color) {
     Button(
-        onClick = {
-            onCLick
-                  },
+        onClick = onCLick,
         modifier = Modifier
             .background(color = MaterialTheme.colorScheme.background)
             .size(50.dp) ,
@@ -129,13 +135,13 @@ fun circularButton(onCLick: (numer: Int) -> Unit ,color: Color) {
 @Composable
 fun SelectableColorRow(colorList: List<Color>, onCLick: (numer: Int) -> Unit){
     Row(horizontalArrangement = Arrangement.spacedBy(5.dp)){
-        circularButton(onCLick,colorList[0])
+        circularButton( {  onCLick(0) },colorList[0])
         Spacer(modifier = Modifier.width(2.dp))
-        circularButton(onCLick,colorList[1])
+        circularButton({  onCLick(1) },colorList[1])
         Spacer(modifier = Modifier.width(2.dp))
-        circularButton(onCLick,colorList[2])
+        circularButton({  onCLick(2) },colorList[2])
         Spacer(modifier = Modifier.width(2.dp))
-        circularButton(onCLick,colorList[3])
+        circularButton({  onCLick(3) },colorList[3])
         Spacer(modifier = Modifier.width(2.dp))
     }
 }
@@ -148,12 +154,12 @@ fun FeedbackCircles(colorList: List<Color>){
 
     ){
         Row(){
+            SmallCircle(colorList[0])
             SmallCircle(colorList[1])
+//        }
+//        Row(){
             SmallCircle(colorList[2])
-        }
-        Row(){
             SmallCircle(colorList[3])
-            SmallCircle(colorList[4])
         }
     }
 }
@@ -196,10 +202,18 @@ fun GameRow(chosenColors: List<Color>, infoColors: List<Color>, clickable : Bool
 }
 
 fun selectNextAvailableColor(availableColors : List<Color>, chosenColors: List<Color>, number: Int): Color{
-    for ( col in availableColors)
-        if(!chosenColors.contains(col))
-            return col
-    return availableColors.last()
+    var temp = 0
+    if(chosenColors[number] != Color.White) {
+         temp = availableColors.indexOf(chosenColors[number])
+    }
+
+    while(chosenColors.contains(availableColors[temp])) {
+        temp += 1;
+        if(temp == availableColors.size)
+            temp = 0
+    }
+
+    return availableColors[temp]
 }
 
 fun selectRandomColors(availableColors : List<Color>): ArrayList<Color> {
@@ -215,15 +229,16 @@ fun selectRandomColors(availableColors : List<Color>): ArrayList<Color> {
     return list;
 }
 
-fun checkColors(chosenColors: List<Color>, rightColors: List<Color>, notFound: Color){
+fun checkColors(chosenColors: List<Color>, rightColors: List<Color>, notFound: Color): ArrayList<Color>{
     var list = ArrayList<Color>()
-    for( i in 0 until rightColors.size){
+    for( i in rightColors.indices){
         if(chosenColors[i] == rightColors[i])
             list.add(Color.Red);
         else if(rightColors.contains(chosenColors[i]))
             list.add(Color.Yellow)
         else list.add(notFound);
     }
+    return list
 }
 
 //@Preview(showBackground = true)

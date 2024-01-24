@@ -1,10 +1,7 @@
-package lab.lab01.masterand
+package lab.lab01.masterand.views
 
 import android.net.Uri
-import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -19,30 +16,32 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import lab.lab01.masterand.R
-import lab.lab01.masterand.ui.theme.MasterAndTheme
+import lab.lab01.masterand.navigation.Screen
+import lab.lab01.masterand.repositories.UsersRepository
+import lab.lab01.masterand.viewModels.AppViewModelProvider
+import lab.lab01.masterand.viewModels.EntryScreenViewModel
+import lab.lab01.masterand.viewModels.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreenInitial(navController: NavController) {
-
-    val name: MutableState<String> = rememberSaveable { mutableStateOf("") }
-    val email = rememberSaveable { mutableStateOf("") }
-    val colors = rememberSaveable { mutableStateOf("") }
+fun ProfileScreenInitial(navController: NavController, viewModel: EntryScreenViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
+    //val coroutineScope = rememberCoroutineScope()
+//    val name: MutableState<String> = rememberSaveable { mutableStateOf("") }
+//    val email = rememberSaveable { mutableStateOf("") }
+//    val colors = rememberSaveable { mutableStateOf("") }
     val numerIsValid  = rememberSaveable { mutableStateOf(false) }
     val profileImageUri = rememberSaveable { mutableStateOf<Uri?>(null) }
     val emailIsValid = rememberSaveable { mutableStateOf(false) }
@@ -91,7 +90,7 @@ fun ProfileScreenInitial(navController: NavController) {
 
         }
         Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextFieldWithError(value = name, errorText = "Name can't be empty", isValid = nameIsValid, name = "name",
+        OutlinedTextFieldWithError(value = viewModel.login, errorText = "Name can't be empty", isValid = nameIsValid, name = "name",
             valiadationFunc = { text:String -> text.matches(Regex("[a-zA-Z0-9._%+-]+")) });
 //        OutlinedTextField(
 //            modifier = Modifier.fillMaxWidth(),
@@ -110,7 +109,7 @@ fun ProfileScreenInitial(navController: NavController) {
 //            }
 //        )
         Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextFieldWithError(value = email, errorText = "That's not a valid email", isValid = emailIsValid, name = "email",
+        OutlinedTextFieldWithError(value = viewModel.email, errorText = "That's not a valid email", isValid = emailIsValid, name = "email",
             valiadationFunc = { text:String -> text.matches(Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}")) });
 //        OutlinedTextField(
 //            modifier = Modifier.fillMaxWidth(),
@@ -133,7 +132,7 @@ fun ProfileScreenInitial(navController: NavController) {
 //            }
 //        )
         Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextFieldWithError(value = colors, errorText = "Number has to be between 5-10", isValid = numerIsValid, name = "number of colors",
+        OutlinedTextFieldWithError(value = viewModel.colors, errorText = "Number has to be between 5-10", isValid = numerIsValid, name = "number of colors",
             valiadationFunc = { text: String -> text.matches(Regex("[5-9]|10"))});
 //        OutlinedTextField(
 //            modifier = Modifier.fillMaxWidth(),
@@ -154,7 +153,7 @@ fun ProfileScreenInitial(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                    navController.navigate(route = Screen.Game.route+"/"+colors.value)
+                    navController.navigate(route = Screen.Game.route+"/"+viewModel.colors.value)
             },
             //enabled = (nameIsValid.value && emailIsValid.value && numerIsValid.value) ,
             modifier = Modifier.fillMaxWidth(),
@@ -162,6 +161,19 @@ fun ProfileScreenInitial(navController: NavController) {
             ) {
             Text(
                 "Play"
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                navController.navigate(route = Screen.Profile.route+"/"+viewModel.login.value + "/" + viewModel.email.value + "/empty" )
+            },
+                enabled = (nameIsValid.value && emailIsValid.value && numerIsValid.value) ,
+            modifier = Modifier.fillMaxWidth(),
+
+            ) {
+            Text(
+                "Profile"
             )
         }
     }
