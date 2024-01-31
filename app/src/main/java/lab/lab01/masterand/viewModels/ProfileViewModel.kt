@@ -2,15 +2,16 @@ package lab.lab01.masterand.viewModels
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.Flow
 import lab.lab01.masterand.entities.User
 import lab.lab01.masterand.repositories.UsersRepository
 
 class ProfileViewModel(private val usersRepository: UsersRepository) : ViewModel()
 {
     var userId = mutableStateOf(0L)
-    val login = mutableStateOf("")
-    val email = mutableStateOf("")
-    suspend fun saveUser() {
-        usersRepository.insertUser( User(userId.value, login.value, email.value))
+    var login = mutableStateOf("")
+    var email = mutableStateOf("")
+    suspend fun getUser(): Flow<User?> {
+        return usersRepository.getUserStream(userId.value.toInt())
     }
 }

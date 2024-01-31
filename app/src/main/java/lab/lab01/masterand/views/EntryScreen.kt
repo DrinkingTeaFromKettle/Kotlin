@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import lab.lab01.masterand.R
 import lab.lab01.masterand.navigation.Screen
 import lab.lab01.masterand.repositories.UsersRepository
@@ -38,10 +39,11 @@ import lab.lab01.masterand.viewModels.ProfileViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreenInitial(navController: NavController, viewModel: EntryScreenViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
-    //val coroutineScope = rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
 //    val name: MutableState<String> = rememberSaveable { mutableStateOf("") }
 //    val email = rememberSaveable { mutableStateOf("") }
 //    val colors = rememberSaveable { mutableStateOf("") }
+    var id = 0L;
     val numerIsValid  = rememberSaveable { mutableStateOf(false) }
     val profileImageUri = rememberSaveable { mutableStateOf<Uri?>(null) }
     val emailIsValid = rememberSaveable { mutableStateOf(false) }
@@ -150,24 +152,17 @@ fun ProfileScreenInitial(navController: NavController, viewModel: EntryScreenVie
 //                }
 //            }
 //        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = {
-                    navController.navigate(route = Screen.Game.route+"/"+viewModel.colors.value)
-            },
-            //enabled = (nameIsValid.value && emailIsValid.value && numerIsValid.value) ,
-            modifier = Modifier.fillMaxWidth(),
 
-            ) {
-            Text(
-                "Play"
-            )
-        }
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                navController.navigate(route = Screen.Profile.route+"/"+viewModel.login.value + "/" + viewModel.email.value + "/empty" )
-            },
+                coroutineScope.launch {
+                   id = viewModel.saveUser()
+                }
+                    //navController.navigate(route = Screen.Profile.route+"/"+viewModel.colors.value )
+                navController.navigate(route = Screen.Profile.route+"/"+viewModel.colors.value+"/"+viewModel.login.value+"/"+viewModel.email.value )
+
+                      },
                 enabled = (nameIsValid.value && emailIsValid.value && numerIsValid.value) ,
             modifier = Modifier.fillMaxWidth(),
 
@@ -210,8 +205,6 @@ private fun ProfileImageWithPicker(profileImageUri: Uri?,
 
                 )
         }
-        //FIXME:
-        // Ikona jest w złym miejscu
         IconButton(
             onClick = {
                 selectImageOnClick()

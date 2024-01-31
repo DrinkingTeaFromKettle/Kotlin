@@ -1,5 +1,6 @@
 package lab.lab01.masterand.navigation
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -10,6 +11,7 @@ import lab.lab01.masterand.views.GameScreen
 import lab.lab01.masterand.views.Profile
 import lab.lab01.masterand.views.ProfileScreenInitial
 import lab.lab01.masterand.views.Results
+import java.net.URI
 
 @Composable
 fun SetupNavGraph(navController: NavHostController){
@@ -30,13 +32,18 @@ fun SetupNavGraph(navController: NavHostController){
             val number = backStackEntry.arguments?.getString("number")!!
             Results(navController = navController, score = score, number = number)
         }
-        composable(route = Screen.Profile.route+"/{name}/{email}/{uri}", arguments = listOf(navArgument("name") { type = NavType.StringType}, navArgument("email") { type = NavType.StringType}, navArgument("uri") { type = NavType.StringType}))
+//        composable(route = Screen.Profile.route+"/{colors}/{id}", arguments = listOf( navArgument("colors") { type = NavType.IntType},navArgument("id") { type = NavType.LongType}))
+//        { backStackEntry ->
+//            val id = backStackEntry.arguments?.getLong("id")!!
+//            val colors = backStackEntry.arguments?.getInt("colors")!!
+//            Profile(navController = navController, colors = colors, id = id)
+//        }
+        composable(route = Screen.Profile.route+"/{colors}/{name}/{email}", arguments = listOf( navArgument("colors") { type = NavType.IntType},navArgument("name") { type = NavType.StringType}, navArgument("email") { type = NavType.StringType}))
         { backStackEntry ->
             val name = backStackEntry.arguments?.getString("name")!!
+            val colors = backStackEntry.arguments?.getInt("colors")!!
             val email = backStackEntry.arguments?.getString("email")!!
-            val uri = backStackEntry.arguments?.getString("uri")!!
-            Profile(navController = navController, name = name, email = email, uri = uri)
+            Profile(navController = navController, colors = colors, name = name, email = email)
         }
-
     }
 }

@@ -7,11 +7,11 @@ import lab.lab01.masterand.repositories.UsersRepository
 
 class EntryScreenViewModel (private val usersRepository: UsersRepository) : ViewModel()
 {
-    var userId = mutableStateOf(0L)
+    //var userId = mutableStateOf(0L)
     val login = mutableStateOf("")
     val email = mutableStateOf("")
     val colors = mutableStateOf("")
-    suspend fun saveUser() {
-        usersRepository.insertUser( User(userId.value, login.value, email.value))
+    suspend fun saveUser(): Long {
+        return usersRepository.insertUser( User(login= login.value, email = email.value))
     }
 }

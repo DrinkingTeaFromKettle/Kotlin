@@ -1,17 +1,16 @@
 package lab.lab01.masterand.views
 
+import android.net.Uri
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,12 +18,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import lab.lab01.masterand.R
 import lab.lab01.masterand.navigation.Screen
+import lab.lab01.masterand.viewModels.AppViewModelProvider
+import lab.lab01.masterand.viewModels.GameViewModel
+import lab.lab01.masterand.viewModels.ProfileViewModel
 
 @Entity(tableName = "profiles")
 data class Profile(
@@ -35,8 +39,25 @@ data class Profile(
 )
 
 @Composable
-fun Profile(navController: NavController, name: String, email: String, uri: String){
-    val profile = Profile(login = name, email = email)
+//fun Profile(navController: NavController,colors: Int, id: Long,  viewModel: ProfileViewModel = viewModel(factory = AppViewModelProvider.Factory)){
+fun Profile(navController: NavController,colors: Int, name: String, email: String,  viewModel: ProfileViewModel = viewModel(factory = AppViewModelProvider.Factory)){
+    var uri = "empty"
+    viewModel.login.value = name
+    viewModel.email.value = email
+//    val coroutineScope = rememberCoroutineScope()
+//    viewModel.userId.value = id
+//    LaunchedEffect(key1 = viewModel.userId.value) {
+//        coroutineScope.launch {
+//            viewModel.getUser().collect { user ->
+//                viewModel.login.value = user?.login ?: ""
+//                viewModel.email.value = user?.email ?: ""
+//
+//            }
+//        }
+//    }
+
+
+    val profile = Profile(login = viewModel.login.value, email = viewModel.email.value)
     Column {
         Row {
             if (uri == "empty") {
@@ -76,6 +97,19 @@ fun Profile(navController: NavController, name: String, email: String, uri: Stri
                 )
             }
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                navController.navigate(route = Screen.Game.route+"/"+colors)
+            },
+            modifier = Modifier.fillMaxWidth(),
+
+            ) {
+            Text(
+                "Play"
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
             navController.navigate(route = Screen.Entry.route)
         },

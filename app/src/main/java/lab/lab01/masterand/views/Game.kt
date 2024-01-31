@@ -91,8 +91,8 @@ fun GameScreen(navController: NavController, number: String,  viewModel: GameVie
             Button(
                 onClick = {
                     navController.navigate(route = Screen.Results.route+"/"+viewModel.score.value + "/" + number)
-                },
-                enabled = viewModel.gameEnd.value,
+                }
+                //,enabled = viewModel.gameEnd.value,
 
                 ) {
                 Text(
@@ -156,8 +156,8 @@ fun FeedbackCircles(colorList: List<Color>){
         Row(){
             SmallCircle(colorList[0])
             SmallCircle(colorList[1])
-//        }
-//        Row(){
+        }
+        Row(){
             SmallCircle(colorList[2])
             SmallCircle(colorList[3])
         }
